@@ -1,0 +1,57 @@
+DATA:
+
+  data_name: pascal
+  data_root: /ubc/cs/research/shield/projects/rayat137/voc2012 
+  train_list: lists/pascal/train.txt 
+  val_list: lists/pascal/val.txt  
+  image_size: 417
+  use_split_coco: False
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+  split: 0 #1 #0
+  workers: 1 #3
+  image_size: 417
+  pin_memory: True
+  classes: 21
+  num_novel: 5 #1   ## Set this to 1 for 1-way; Else give total number of novel class
+  multi_way: True #False   ### 1-way or multiway
+  use_transduction: True
+  debug_each_episode: True  ### TURN THIS OFF TO DEBUG EVERY TASK
+
+MODEL:
+  arch: M2Former
+  pretrained: True
+  bins: [1, 2, 3, 6]
+  dropout: 0.1
+  m_scale: False
+  layers: 50
+  bottleneck_dim: 512
+  one_vs_rest: False
+  use_mlp: True
+
+EVALUATION:
+  mask_loss: False #True
+  keep_class_embed: False #Set both to false for vanilla model
+  debug: False
+  ckpt_path: /ubc/cs/research/shield/projects/rayat137/code/DiaM/exp/pascal/M2Former_os_32_layer_9/split0/resnet50/4/mask_loss_False/class_embed_False/snapshot 
+  load_model_id: 1
+  ckpt_used: best 
+  test_num: -1   #i.e., use all the test data #10000
+  shot: 1 
+  batch_size_val: 32 #64 
+  n_runs: 5
+  support_only_one_novel: True # It might help the model unfairly if a single support image has information about multiple novel classes, so set to Trued
+  use_training_images_for_supports: False
+  generate_new_support_set_for_each_task: False
+  shuffle_test_data: True
+  manual_seed: 2023 #2023
+  gpus: [0,1,2,3]
+  visualize: False
+
+CLASSIFIER:
+  weights: [100, 1, 1, 25] 
+  cls_lr: 0.005     #Use 0.05 for 1 shot; Use 0.005 (for best performance)
+  adapt_iter: 100 
+  pi_estimation_strategy: self # ['uniform', 'self', 'imglvl', 'upperbound']
+  pi_update_at: [40]
+  fine_tune_base_classifier: True
