@@ -61,7 +61,9 @@ def main_worker(rank: int, world_size: int, args: argparse.Namespace) -> None:
         assert os.path.isfile(filepath), filepath
         checkpoint = torch.load(filepath)
         state_dict = checkpoint['state_dict']
-
+        state_dict = {(key if key.startswith('module.') else f"module.{key}"): value
+        for key, value in state_dict.items()}
+        #import pdb; pdb.set_trace()
         if args.one_vs_rest:
             state_dict['module.transformer.query_feat.weight'] = torch.cat((state_dict['module.transformer.query_feat.weight'], torch.randn(1,256).to(state_dict['module.transformer.query_feat.weight'].device) ))
             state_dict['module.transformer.query_embed.weight'] = torch.cat((state_dict['module.transformer.query_embed.weight'],torch.randn(1,256).to(state_dict['module.transformer.query_feat.weight'].device) ))

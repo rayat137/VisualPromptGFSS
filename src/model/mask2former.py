@@ -11,7 +11,6 @@ import torch.nn.functional as F
 
 
 def get_model_m2former(args, novel_fine_tune=False) -> nn.Module:
-    #return PSPNet(args, zoom_factor=8, use_ppm=True)
     
     return Mask2former(args, novel_fine_tune)
 
@@ -22,13 +21,7 @@ class PPM(nn.Module):
         super(PPM, self).__init__()
         self.features = []
         for bin in bins:
-            # self.features.append(nn.Sequential(
-            #     nn.AdaptiveAvgPool2d(bin),
-            #     #nn.Conv2d(in_dim, reduction_dim, kernel_size=1, bias=False),
-            #     #nn.BatchNorm2d(reduction_dim),
-            #     nn.BatchNorm2d(in_dim),
-            #     nn.ReLU(inplace=True)))
-            
+
             self.features.append(nn.Sequential(
                 nn.AdaptiveAvgPool2d(bin),
                 nn.Conv2d(in_dim, reduction_dim, kernel_size=1, bias=False),
@@ -164,47 +157,16 @@ class Mask2former(nn.Module):
         ndims = mask_features.dim()
         if ndims==3:
             mask_features = mask_features.unsqueeze(0)
-        mask_features_aux =  out['aux_masks']
-        if mask_features_aux.dim() <5:
-            mask_features_aux = mask_features_aux.unsqueeze(0)
-        mask_features_aux = mask_features_aux.permute(1,0,2,3,4)
-        mask_cls = out['pred_logits']
-        mask_cls_aux = out['aux_logits']
-        #layer_wise_attention = out['layerwise_attention']
+
+        mask_features = F.interpolate(mask_features, size=(i_h, i_w), mode="bilinear")
+        semseg = mask_features
         if self.keep_class_embed:
-            if mask_cls.dim() <3:
-                    mask_cls = mask_cls.unsqueeze(0)   
-            if mask_cls_aux.dim() <4:
-                mask_cls_aux = mask_cls_aux.unsqueeze(0)
-            mask_cls_aux = mask_cls_aux.permute(1,0,2,3)
+            mask_features = mask_features.sigmoid()
+            mask_cls = F.softmax(out['pred_logits'], dim=-1)
+            try:
+                semseg = torch.einsum("bqc,bqhw->bchw", mask_cls, mask_features)
+            except:
+                semseg =  torch.einsum("bqc,bqhw->bchw", mask_cls.unsqueeze(0), mask_features)
 
-        if not mask_loss:
-            mask_features = F.interpolate(mask_features, size=(i_h, i_w), mode="bilinear")
-            semseg = mask_features
-            if self.keep_class_embed:
-                mask_features = mask_features.sigmoid()
-                mask_cls = F.softmax(out['pred_logits'], dim=-1)
-                try:
-                    semseg = torch.einsum("bqc,bqhw->bchw", mask_cls, mask_features)
-                except:
-                    semseg =  torch.einsum("bqc,bqhw->bchw", mask_cls.unsqueeze(0), mask_features)
+        return semseg
 
-            semseg_aux = mask_features_aux
-            if self.keep_class_embed:
-                mask_features_aux = mask_features_aux.sigmoid()
-                mask_cls_aux = F.softmax(mask_cls_aux, dim=-1)
-                try:
-                    semseg_aux = torch.einsum("blqc,blqhw->blchw", mask_cls_aux, mask_features_aux)
-                except:
-                    semseg_aux = torch.einsum("blqc,blqhw->blchw", mask_cls_aux.unsqueeze(0), mask_features_aux)
-
-            return semseg, semseg_aux
-        else:
-            out = {
-                'pred_logits': mask_cls,
-                'pred_masks': mask_features,
-                'aux_masks':mask_features_aux,
-                'aux_logits':mask_cls_aux
-                
-            }
-            return out

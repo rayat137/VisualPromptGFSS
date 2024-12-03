@@ -1,0 +1,74 @@
+Data:
+  data_name: pascal
+  data_root: /ubc/cs/research/shield/projects/rayat137/voc2012 
+  train_list: lists/pascal/train.txt 
+  val_list: lists/pascal/val.txt  
+  classes: 16
+  image_size: 417
+  use_split_coco: False
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+
+
+Train:
+  # Aug
+  mask_loss: False #True
+  keep_class_embed: False #True
+  train_h: 417
+  train_w: 417
+  val_size: 417
+  scale_min: 0.5  # minimum random scale
+  scale_max: 2.0 # maximum random scale
+  rotate_min: -10  # minimum random rotate
+  rotate_max: 10  # maximum random rotate
+  ignore_label: 255
+  padding_label: 255
+  m_scale: False
+  pretrained: True
+  bottleneck_dim: 512
+  dropout: 0.1
+  use_mlp: True
+  # Dataset & Mode
+  split: 0
+  data_set: 'pascal'
+  # Optimizer
+  batch_size: 16 #4 # batch size for training (bs12 for 1GPU)
+  base_lr: 0.0001 # 0.0001
+  epochs: 100
+  start_epoch: 0 #0
+  stop_interval: 75 # stop when the best result is not updated for "stop_interval" epochs
+  index_split: -1 # index for determining the params group with 10x learning rate
+  power: 0.9 # 0 means no decay
+  momentum: 0.9
+  weight_decay: 0.0001 
+  warmup: False
+  one_vs_rest: False
+  # Viz & Save & Resume
+  bins: [1, 2, 3, 6]
+  print_freq: 10
+  save_freq: 1 
+  resume:  #exp/pascal/M2Former/split0/resnet50/4/mask_loss_False/class_embed_False/snapshot/train_epoch_9_0.6101.pth
+  # Validate
+  evaluate: True
+  fix_random_seed_val: True
+  batch_size_val: 4
+  resized_val: True
+  ori_resize: False  # use original label for evaluation
+  # Else
+  workers: 8  # 8 data loader workers
+  manual_seed: 321
+  seed_deterministic: False
+  zoom_factor: 8  # zoom factor for final prediction during training, be in [1, 2, 4, 8]
+  num_novel: 0
+  one_vs_rest: False
+
+EVALUATION:
+  support_only_one_novel: False # It might help the model unfairly if a single support image has information about multiple novel classes, so set to True
+  use_training_images_for_supports: False
+  generate_new_support_set_for_each_task: False
+  test_num: -1 #-1  #i.e., use all the test data #10000
+  shot: 1
+
+Method:
+  layers: 50
+  vgg: False
