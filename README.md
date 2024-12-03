@@ -48,9 +48,15 @@ Please download our pre-trained base models from this [google drive link](https:
 
 Default configuration files can be found in `config/`. The directory `src/lists/` contains the train/val splits for each dataset. All the codes are provided in `src/`. 
 
-## &#x2699; Training The Base (To be updated soon)
+## &#x2699; Training The Base 
 
-Due to time constraints, we have not yet uploaded the source code for training the base model. However, we plan to release it soon. Our primary contribution lies in few-shot optimization and inference, which is why we prioritized releasing that part first. For training the base model, we employed a standard per-pixel cross-entropy loss.
+If you want to train the base models from scratch please run the following: 
+
+```
+python3 train_base.py --config=../config/pascal_split0_resnet50_base_m2former.yaml --arch=M2Former  # For pascal-20 split0 base class training
+python3 train_base.py --config=../config/coco_split0_resnet50_base_m2former.yaml --arch=M2Former  # For coco-80 split0 base class training
+```
+Modify the config files accordingly for the split that you want to train. 
 
 ## &#x1F9EA; Few-shot fine-tuning
 
