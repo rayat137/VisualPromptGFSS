@@ -34,7 +34,7 @@ EVALUATION:
   ckpt_path: /ubc/cs/research/shield/projects/rayat137/code/DiaM/exp/coco/M2Former_os_32_layer_9/split0/resnet50/4/mask_loss_False/class_embed_False/snapshot 
   load_model_id: 1
   ckpt_used: best
-  test_num: 1000  #-1  #i.e., use all the test data 
+  test_num: 10000  #-1  #i.e., use all the test data 
   shot: 1 ##5
   batch_size_val: 1 
   n_runs: 5
